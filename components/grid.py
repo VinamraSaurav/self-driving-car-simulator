@@ -13,17 +13,17 @@ class Grid:
     def draw(self, screen, goal_x, goal_y):
         """Draw the grid, goal state, and obstacles"""
         screen.fill(BLACK)
-
+    
         # Draw grid cells
         for x in range(self.width):
             for y in range(self.height):
                 rect = pygame.Rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
                 pygame.draw.rect(screen, WHITE, rect, 1)
-
+    
         # Draw goal state in green
         goal_rect = pygame.Rect(goal_x * CELL_SIZE, goal_y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
         pygame.draw.rect(screen, GREEN, goal_rect)
-
+    
     def add_dynamic_obstacle(self, x, y):
         """Add dynamic obstacle to the grid"""
         self.dynamic_obstacles.add((x, y))
