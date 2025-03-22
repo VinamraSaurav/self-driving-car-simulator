@@ -27,3 +27,15 @@ CAR_SPEED = 2     # Speed factor for the car
 OBSTACLE_MOVE_INTERVAL = 90  # Frames between obstacle movements
 PATH_RECALC_INTERVAL = 60    # Frames between path recalculations
 TRAFFIC_DENSITY = 5          # Number of AI-controlled cars
+
+# Game modes
+MODE_SIMULATION = 0
+MODE_RACE = 1
+MODE_COLLECT = 2
+MODE_MANUAL = 3
+
+# Point system
+POINTS_GOAL_REACHED = 100
+POINTS_COIN_COLLECTED = 25
+POINTS_OBSTACLE_AVOIDED = 5
+POINTS_COLLISION = -50

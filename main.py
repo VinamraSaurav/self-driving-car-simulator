@@ -1,4 +1,5 @@
 import pygame
+from pygame.locals import *
 import random
 import sys
 from components.grid import Grid
@@ -10,6 +11,8 @@ from components.traffic_manager import TrafficManager
 from components.metrics_panel import MetricsPanel
 from components.pathfinding import a_star
 from utils.config import GRID_WIDTH, GRID_HEIGHT, CELL_SIZE, FPS, GREY, WHITE
+from components.game_controller import GameController
+from utils.config import MODE_COLLECT, MODE_MANUAL, MODE_RACE, MODE_SIMULATION
 
 # Pygame initialization
 pygame.init()
@@ -103,6 +106,10 @@ traffic_manager = TrafficManager(grid, player_car, traffic, dynamic_obstacles)
 # Create metrics panel
 metrics_panel = MetricsPanel(PANEL_WIDTH)
 
+# Create game controller
+game_controller = GameController(grid, player_car, metrics_panel)
+
+
 # Simulation loop
 clock = pygame.time.Clock()
 running = True
@@ -132,6 +139,18 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 running = False
+            elif event.key == pygame.K_1:  # Switch to Simulation mode
+                game_controller.switch_mode(MODE_SIMULATION)
+                paused = False
+            elif event.key == pygame.K_2:  # Switch to Race mode
+                game_controller.switch_mode(MODE_RACE)
+                paused = False
+            elif event.key == pygame.K_3:  # Switch to Collection mode
+                game_controller.switch_mode(MODE_COLLECT)
+                paused = False
+            elif event.key == pygame.K_4:  # Switch to Manual control mode
+                game_controller.switch_mode(MODE_MANUAL)
+                paused = False
             elif event.key == pygame.K_p:  # Pause/Resume
                 paused = not paused
             elif event.key == pygame.K_r:  # Reset
@@ -175,6 +194,10 @@ while running:
                 player_car.path = a_star(grid, (player_car.x, player_car.y), 
                                         (player_car.goal_x, player_car.goal_y)) or []
                 player_car.recalculations += 1
+
+    # Update game controller
+    keys_pressed = pygame.key.get_pressed()
+    game_controller.update(keys_pressed)
 
     if not paused:
         # Handle obstacle movement delay
@@ -236,6 +259,12 @@ while running:
     
     # Update and draw metrics panel
     metrics_panel.update_metrics(player_car, traffic_manager, int(current_fps))
+
+    # If in a game mode, also update score/level/time display
+    if game_controller.mode != MODE_SIMULATION:
+        metrics_panel.metrics["score"] = game_controller.score
+        metrics_panel.metrics["level"] = game_controller.level
+        metrics_panel.metrics["time"] = game_controller.time_remaining // 60
     metrics_panel.draw(screen)
     
     # Display pause indicator if paused
@@ -244,6 +273,10 @@ while running:
         pause_text = font.render("PAUSED", True, WHITE)
         text_rect = pause_text.get_rect(center=(GRID_WIDTH * CELL_SIZE // 2, GRID_HEIGHT * CELL_SIZE // 2))
         screen.blit(pause_text, text_rect)
+
+    
+    # Draw game controller elements
+    game_controller.draw(screen)
 
     pygame.display.flip()
     clock.tick(FPS)

@@ -38,38 +38,44 @@ class MultiCar:
             if not self.grid.is_occupied(x, y):
                 return (x, y)
     
-    def update(self):
-        """Update all cars, recalculate paths if necessary"""
-        car_positions = {(car.x, car.y) for car in self.cars}
-        
-        for car in self.cars:
-            # Check if car has reached its goal
-            if (car.x, car.y) == (car.goal_x, car.goal_y):
-                # Set new random goal
-                new_goal = self._get_random_unoccupied_position()
-                car.goal_x, car.goal_y = new_goal
-                car.path = a_star(self.grid, (car.x, car.y), (car.goal_x, car.goal_y)) or []
-                continue
-                
-            # Move the car if it has a path
-            if car.path:
-                # Check next position for collision with other cars
-                next_pos = car.path[0] if car.path else (car.x, car.y)
-                
-                # If next position is occupied by another car, recalculate path
-                if next_pos in car_positions and next_pos != (car.x, car.y):
-                    # Wait this turn and recalculate
-                    car.path = a_star(self.grid, (car.x, car.y), (car.goal_x, car.goal_y)) or []
-                else:
-                    # Safe to move
-                    car_positions.remove((car.x, car.y))
-                    car.move()
-                    car_positions.add((car.x, car.y))
-            else:
-                # No path exists, try to recalculate
-                car.path = a_star(self.grid, (car.x, car.y), (car.goal_x, car.goal_y)) or []
     
+
     def draw(self, screen):
         """Draw all cars"""
         for car in self.cars:
             car.draw(screen)
+
+    def update(self):
+        """Update all cars, recalculate paths if necessary"""
+        car_positions = {(car.x, car.y) for car in self.cars}
+    
+        for car in self.cars:
+        # Check if car has reached its goal
+            if (car.x, car.y) == (car.goal_x, car.goal_y):
+            # Set new random goal
+                new_goal = self._get_random_unoccupied_position()
+                car.goal_x, car.goal_y = new_goal
+                car.path = a_star(self.grid, (car.x, car.y), (car.goal_x, car.goal_y)) or []
+                continue
+            
+        # Move the car if it has a path
+            if car.path:
+            # Check next position for collision with other cars
+                next_pos = car.path[0] if car.path else (car.x, car.y)
+            
+            # If next position is occupied by another car, recalculate path
+                if next_pos in car_positions and next_pos != (car.x, car.y):
+                # Try to find an alternative path by temporarily marking the blocked position as an obstacle
+                    self.grid.add_dynamic_obstacle(next_pos[0], next_pos[1])
+                    car.path = a_star(self.grid, (car.x, car.y), (car.goal_x, car.goal_y)) or []
+                    self.grid.remove_dynamic_obstacle(next_pos[0], next_pos[1])
+                    car.recalculations += 1
+                else:
+                # Safe to move
+                    car_positions.remove((car.x, car.y))
+                    car.move()
+                    car_positions.add((car.x, car.y))
+            else:
+            # No path exists, try to recalculate
+                car.path = a_star(self.grid, (car.x, car.y), (car.goal_x, car.goal_y)) or []
+                car.recalculations += 1
